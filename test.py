@@ -8,21 +8,21 @@ from threading import Thread
 
 load_dotenv()
 
-
-queue = Queue()
-
 """
  Every single token that is received by our language model
 """
 class StreamingHandler(BaseCallbackHandler):
-    def on_llm_new_token(self, token, **kwargs):
-        queue.put(token)
-    def on_llm_end(self, response, **kwargs):
-        queue.put(None)
-    def on_llm_error(self, error, **kwargs):
-        queue.put(None)        
+    def __init__(self, queue):
+        self.queue = queue
 
-chat = ChatOpenAI(streaming=True, callbacks=[StreamingHandler()]) # Controls how OpenAI responds to LangChain
+    def on_llm_new_token(self, token, **kwargs):
+        self.queue.put(token)
+    def on_llm_end(self, response, **kwargs):
+        self.queue.put(None)
+    def on_llm_error(self, error, **kwargs):
+        self.queue.put(None)        
+
+chat = ChatOpenAI(streaming=True) # Controls how OpenAI responds to LangChain
                                   # Whether or not the response is going to be streamed  
 
 prompt = ChatPromptTemplate.from_messages([
@@ -47,8 +47,10 @@ prompt = ChatPromptTemplate.from_messages([
 
 class StreamingChain(LLMChain):
     def stream(self, input):
+        queue = Queue()
+        handler = StreamingHandler(queue)
         def task():
-            self(input) #Execute the Chain
+            self(input, callbacks=[handler]) #Execute the Chain
         Thread(target=task).start()
         while True:
             token = queue.get()
