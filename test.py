@@ -6,9 +6,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+"""
+ Every single token that is received by our language model
+"""
 class StreamingHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token, **kwargs):
-        print(token)
+        pass
 
 chat = ChatOpenAI(streaming=True, callbacks=[StreamingHandler()]) # Controls how OpenAI responds to LangChain
                                   # Whether or not the response is going to be streamed  
@@ -17,8 +20,8 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{content}")
 ])
 
-messages = prompt.format_messages(content="Tell me a joke.")
-chain = LLMChain(llm=chat, prompt=prompt)
+# messages = prompt.format_messages(content="Tell me a joke.")
+# chain = LLMChain(llm=chat, prompt=prompt)
 
 #output = chat(messages)
 # output = chat.__call__(messages) Controls
@@ -29,6 +32,20 @@ chain = LLMChain(llm=chat, prompt=prompt)
 #output = chat.stream(messages)
 
 # chat.stream(messages) Override the language model streaming flag
+
+# for output in chain.stream(input={"content": "tell me a joke"}):
+#     print(output)
+
+class StreamingChain(LLMChain):
+    def stream(self, input):
+        print(self(input))
+        yield 'Hi'
+        yield 'there'
+
+chain = StreamingChain(
+    llm=chat,
+    prompt=prompt
+)
 
 for output in chain.stream(input={"content": "tell me a joke"}):
     print(output)
