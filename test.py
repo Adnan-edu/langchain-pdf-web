@@ -1,10 +1,16 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from langchain.callbacks.base import BaseCallbackHandler
+from langchain.chains import LLMChain
 from dotenv import load_dotenv
 
 load_dotenv()
 
-chat = ChatOpenAI(streaming=True) # Controls how OpenAI responds to LangChain
+class StreamingHandler(BaseCallbackHandler):
+    def on_llm_new_token(self, token, **kwargs):
+        print(token)
+
+chat = ChatOpenAI(streaming=True, callbacks=[StreamingHandler()]) # Controls how OpenAI responds to LangChain
                                   # Whether or not the response is going to be streamed  
 
 prompt = ChatPromptTemplate.from_messages([
@@ -12,6 +18,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 messages = prompt.format_messages(content="Tell me a joke.")
+chain = LLMChain(llm=chat, prompt=prompt)
 
 #output = chat(messages)
 # output = chat.__call__(messages) Controls
@@ -23,5 +30,5 @@ messages = prompt.format_messages(content="Tell me a joke.")
 
 # chat.stream(messages) Override the language model streaming flag
 
-for message in chat.stream(messages):
-    print(message.content)
+for output in chain.stream(input={"content": "tell me a joke"}):
+    print(output)
