@@ -3,15 +3,24 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import LLMChain
 from dotenv import load_dotenv
+from queue import Queue
+from threading import Thread
 
 load_dotenv()
+
+
+queue = Queue()
 
 """
  Every single token that is received by our language model
 """
 class StreamingHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token, **kwargs):
-        pass
+        queue.put(token)
+    def on_llm_end(self, response, **kwargs):
+        queue.put(None)
+    def on_llm_error(self, error, **kwargs):
+        queue.put(None)        
 
 chat = ChatOpenAI(streaming=True, callbacks=[StreamingHandler()]) # Controls how OpenAI responds to LangChain
                                   # Whether or not the response is going to be streamed  
@@ -38,9 +47,14 @@ prompt = ChatPromptTemplate.from_messages([
 
 class StreamingChain(LLMChain):
     def stream(self, input):
-        print(self(input))
-        yield 'Hi'
-        yield 'there'
+        def task():
+            self(input) #Execute the Chain
+        Thread(target=task).start()
+        while True:
+            token = queue.get()
+            if token is None:
+                break
+            yield token
 
 chain = StreamingChain(
     llm=chat,
