@@ -1,5 +1,22 @@
 from app.chat.redis import client
 
+def random_component_by_score(component_type, component_map):
+    if component_type not in ["llm", "retriever", "memory"]:
+        raise ValueError("Invalid component_type")
+    
+    values = client.hgetall(f"{component_type}_score_values")
+    counts = client.hgetall(f"{component_type}_score_counts")
+
+    names = component_map.keys()
+
+    avg_scores = {}
+
+    for name in names:
+        score = int(values.get(name), 1)
+        count = int(counts.get(name), 1)
+        avg = score / count
+        avg_scores[name] = max(avg, 0.1)
+
 def score_conversation(
     conversation_id: str, score: float, llm: str, retriever: str, memory: str
 ) -> None:
