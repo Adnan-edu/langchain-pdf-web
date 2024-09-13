@@ -1,7 +1,8 @@
 import os
 import redis
 
+
 client = redis.Redis.from_url(
     os.environ["REDIS_URI"],
-    decode_response=True
+    decode_responses=True
 )
