@@ -1,3 +1,6 @@
+
+<img src="images/openart-image_tIF1oL4C_1743215421747_raw.jpg" alt="LangChain OpenAI Pinecone Logo">
+
 # Langchain PDF Web
 
 Langchain PDF Web is a web-based application that allows users to process and interact with PDF documents using natural language. It leverages LangChain for building AI-powered document interactions.
