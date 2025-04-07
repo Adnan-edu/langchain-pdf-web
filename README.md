@@ -12,8 +12,6 @@ Langchain PDF Web is a web-based application that allows users to process and in
   - [Steps](#steps)
 - [Usage](#usage)
 - [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
 - [Acknowledgments](#acknowledgments)
 
 ## Features
